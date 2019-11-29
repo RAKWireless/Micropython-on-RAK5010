@@ -112,7 +112,7 @@ def get_gps():
 	string = str(buf3,'utf-8')
 	print(string)
 
-#this function is suit for most at commands of bg96. Timeout(ms) is the what bg96 needs depending on the at. e.g. rui.cellular_tx('ATI',500)
+#this function is suitable for most AT commands of bg96. Timeout(ms) is what bg96 needs depending on the AT. e.g. rui.cellular_tx('ATI', 500)
 def cellular_tx(at,timeout):
 	buf3=bytearray()
 	uart.write(at)
@@ -129,3 +129,110 @@ def cellular_tx(at,timeout):
 
 	string = str(buf3,'utf-8')
 	print(string)
+	return string 
+
+#thanks for Mr Dider's contribution
+def gnss_on(mode=1, fixmaxtime=30, fixmaxdist=50, fixcount=0, fixrate=1):
+  """
+  Turns on the GNSS function
+  Default parameters
+  Checks parameters
+  """
+  if(mode<1) or (mode>4):
+    print("GNSS working mode range 1<>4!")
+    print("Default is 1.")
+    print("""    1 Stand-alone
+    2 MS-based
+    3 MS-assisted
+    4 Speed-optimal""")
+    return
+  if(fixmaxtime<1) or (fixmaxtime>255):
+    print("Maximum positioning time range 1<>255!")
+    print("Default is 30 seconds.")
+    return
+  if(fixmaxdist<1) or (fixmaxdist>1000):
+    print("Accuracy threshold of positioning range 1<>1000!")
+    print("Default is 50 meters.")
+    return
+  if(fixcount>1000):
+    print("Number of attempts for positioning range 0<>1000!")
+    print("Default is 0 (continuous).")
+    return
+  if(fixrate<1) or (fixrate>65535):
+    print("Interval between first and second positioning range 1<>65535!")
+    print("Default is 1 second.")
+    return  
+  cellular_tx('AT+QGPS='+str(mode)+','+str(fixmaxtime)+','+str(fixmaxdist)+','+str(fixcount)+','+str(fixrate), 500)
+
+def gnss_off():
+  """Turns off GNSS"""
+  cellular_tx('AT+QGPSEND', 500)
+
+def gnss_status():
+  """Enquires GNSS status"""
+  cellular_tx('AT+QGPS?', 500)
+
+def gpsloc(mode=0):
+  """Acquire Positioning Information
+  Modes:
+    0: <latitude>,<longitude> format: ddmm.mmmm N/S,dddmm.mmmm E/W
+    1: <latitude>,<longitude> format: ddmm.mmmmmm N/S,dddmm.mmmmmm E/W
+    2: <latitude>,<longitude> format: (-)dd.ddddd,(-)ddd.ddddd
+    Checks mode"""
+  if(mode<0) or (mode>2):
+    print("GPSLOC mode range 0<>2!")
+    print("Default is 0.")
+    print("""    Modes:
+    0: <latitude>,<longitude> format: ddmm.mmmm N/S,dddmm.mmmm E/W
+    1: <latitude>,<longitude> format: ddmm.mmmmmm N/S,dddmm.mmmmmm E/W
+    2: <latitude>,<longitude> format: (-)dd.ddddd,(-)ddd.ddddd""")
+    return
+  cellular_tx('AT+QGPSLOC='+str(mode), 500)
+
+def gnss_enable_nmea():
+  cellular_tx('AT+QGPSCFG="nmeasrc",1', 500)
+
+def gnss_disable_nmea():
+  cellular_tx('AT+QGPSCFG="nmeasrc",0', 500)
+
+def gnss_get_nmea(sentence="GGA"):
+  """gets an NMEA sentence.
+  Valid sentences are ¡°GGA¡±,¡°RMC¡±,¡°GSV¡±,¡°GSA¡±,¡°VTG¡±,¡°GNS¡±
+  If the sentence is GGA, the code tries to extract data
+  and returns it into an object.
+  """
+  a=cellular_tx('AT+QGPSGNMEA="'+sentence+'"', 500)
+  b=a.split("\n")
+  for x in b:
+    if(x.startswith('+QGPSGNMEA: $GPGGA')):
+      c=x[12:]
+      c=c.split(',')
+      result={}
+      time=c[1].split('.')
+      time=time[0]
+      result['tof']=time[0:2]+':'+time[2:4]+':'+time[4:]+' UTC'
+      valid=c[6]
+      if(valid==0):
+        print("  Fix is not valid! Aborting.")
+        result['valid']=False
+        return result
+      result['valid']=True
+      SVs=c[7]
+      result['SVs']=float(SVs)
+      OrthoHeight=c[9]+' '+c[10]
+      result['orthoheight']=float(c[9])
+      long=float(c[2])
+      NS=c[3]
+      x=int(long/100)
+      y=((long/100)-x)*10/6
+      long=x+y
+      result['long']=long
+      result['NS']=NS
+      lat=float(c[4])
+      EW=c[5]
+      x=int(lat/100)
+      y=((lat/100)-x)*10/6
+      lat=x+y
+      result['lat']=long
+      result['EW']=EW
+      return result
