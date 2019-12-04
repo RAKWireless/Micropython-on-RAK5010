@@ -1,0 +1,81 @@
+    20191203 10:57:00 UTC+8
+    
+    Added a few commands.
+    def bg96_IMSI(echo=False, ret=True):
+    def bg96_ICCID(echo=False, ret=True):
+    def bg96_SIM_Insertion(echo=False, ret=True):
+    def bg96_Set_Baud_Rate(rate=115200, echo=False, ret=True):
+    def bg96_Activity_Status(echo=False, ret=True):
+    
+    Changed the gnss_errors array to _bg96_errors, and added all error codes.
+    
+    2019/12/03 22:07
+    
+    gpsloc
+      Refactored the code so that a single dict is used, ret_Arg, and if echo is needed, the ['text'] element of that dict is used.
+    
+    Adapted original functions to use _answer
+      get_acceleration
+      get_light_strength
+      get_temperature_humidity
+      get_pressure
+      get_gps
+    
+    bg96_Battery
+      Changed the code to return 4 parameters:
+      From:
+        >>> rui.bg96_Battery()
+        {'volt': 4.128, 'charging': 0, 'percent': 94.00001}
+      To:
+        >>> rui.bg96_Battery()
+        {'code': 0, 'volt': 4.13, 'charging': False, 'percent': 95.0}
+      There's only one case where charging is happening, so a True/False parameter makes sense.
+      If it is not charging, you can look at the code and enquire why (not charging / done charging).
+    
+    This is possibly the last version for non-LTE commands. Barring any update, bug fixes, etc.
+    
+    TODO
+    
+      1. Play with LTE
+      2. Add external sensors. I have ideas.
+    
+    Commands recap:
+     =================
+    def get_acceleration(echo=False, ret=True):
+    def get_light_strength(echo=False, ret=True):
+    def get_temperature_humidity(echo=False, ret=True):
+    def get_pressure(echo=False, ret=True):
+    def get_gps(echo=False, ret=True):
+    def cellular_tx(at, timeout=500, echo=True, ret=False):
+     ==================
+    def _answer(echo, ret, echo_Arg, ret_Arg):
+    def gnss_on(mode=1, fixmaxtime=30, fixmaxdist=50, fixcount=0, fixrate=1, echo=True, ret=False):
+    def gnss_off(echo=True, ret=False):
+    def gnss_status(echo=True, ret=False):
+    def gpsloc(mode=0, echo=False, ret=True):
+    def gnss_enable_nmea():
+    def gnss_disable_nmea():
+    def gnss_get_nmea(sentence="GGA"):
+    def bg96_PI(echo=False, ret=True):
+    def bg96_Manufacturer(echo=False, ret=True):
+    def bg96_Product(echo=False, ret=True):
+    def bg96_Revision(echo=False, ret=True):
+    def bg96_IMEI(echo=False, ret=True):
+    def bg96_IMSI(echo=False, ret=True):
+    def bg96_ICCID(echo=False, ret=True):
+    def bg96_SIM_Insertion(echo=False, ret=True):
+    def bg96_FactoryDefault():
+    def bg96_Config():
+    def bg96_Save_User_Profile():
+    def bg96_Load_User_Profile():
+    def bg96_Set_Result_Code(code=0):
+    def bg96_Result_code_On():
+    def bg96_Result_code_Off():
+    def bg96_Set_Result_Code_Verbosity(code=0):
+    def bg96_Set_Command_Echo(code=0):
+    def bg96_Power_Down(code=1):
+    def bg96_Read_Clock(echo=False, ret=True):
+    def bg96_Battery(echo=False, ret=True):
+    def bg96_Temp(echo=False, ret=True):
+    def bg96_Set_Baud_Rate(rate=115200, echo=False, ret=True):
+    def bg96_Activity_Status(echo=False, ret=True):
